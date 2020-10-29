@@ -1,25 +1,52 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { memo, useEffect, useState } from "react";
+import "./App.css";
+
+// utilities
+import { makeARequest } from "./utilities/api";
+
+// api
+import * as BrauzApi from "./api/BrauzApi";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  // hooks
+  const [error_message, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    decodeShortenedUrl();
+  }, []);
+
+  // functions
+  const decodeShortenedUrl = async () => {
+    const { href = "" } = window.location;
+
+    await makeARequest({
+      name: `Decode Shorted URL`,
+      is_check_success: false,
+      requestFunction: BrauzApi.decodeShortenedUrl,
+      payload: {
+        url: href,
+      },
+      handleError: (error_message) => {
+        setErrorMessage(error_message);
+      },
+      handleSuccess: (response) => {
+        const { data = {} } = response;
+        const { long_url = "" } = data;
+
+        window.location.replace(long_url);
+      },
+    });
+  };
+
+  // content render helper
+  let content = null;
+  if (error_message) {
+    content = <div className="error">{error_message}</div>;
+  } else {
+    content = <div>Redirecting...</div>;
+  }
+
+  return <div className="App">{content}</div>;
 }
 
-export default App;
+export default memo(App);
