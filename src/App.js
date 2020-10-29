@@ -29,11 +29,7 @@ function App() {
 
       const snapshot = await db
         .collection(COLLECTION_NAME_URL_SHORTENER)
-        .where(
-          "short_url",
-          "==",
-          "https://brauz-url-test.netlify.app/vN_p6UicgxIPZiTV1IFpn1603943094055"
-        )
+        .where("short_url", "==", href)
         .get();
 
       if (snapshot.empty) {
@@ -45,8 +41,7 @@ function App() {
         });
 
         const { long_url = "" } = data;
-        console.log(long_url)
-        // window.location.replace(long_url);
+        window.location.replace(long_url);
       }
     } catch (e) {
       setErrorMessage(e.toString());
