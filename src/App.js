@@ -45,8 +45,7 @@ function App() {
         });
 
         const { long_url = "" } = data;
-        console.log(long_url);
-        // window.location.replace(long_url);
+        window.location.replace(long_url);
       }
     } catch (e) {
       setErrorMessage(e.toString());
