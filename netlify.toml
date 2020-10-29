@@ -1,0 +1,5 @@
+[build]
+  # command = "yarn build"
+  # functions = "out_functions"
+  functions = "src/lambda"
+  # publish = "out_publish"
