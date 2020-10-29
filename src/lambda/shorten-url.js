@@ -31,21 +31,37 @@ app.all("*", async (req, res) => {
       });
     }
 
-    const created_date = Date.now();
-    const code = nanoid(12) + created_date;
-    const short_url = `${DOMAIN}/${code}`;
+    const snapshot = await db
+      .collection(COLLECTION_NAME_URL_SHORTENER)
+      .where("long_url", "==", url)
+      .get();
 
-    const payload = {
-      long_url: url,
-      short_url,
-      created_date,
-    };
+    if (snapshot.empty) {
+      const created_date = Date.now();
+      const code = nanoid() + created_date;
+      const short_url = `${DOMAIN}/${code}`;
 
-    await db.collection(COLLECTION_NAME_URL_SHORTENER).add(payload);
+      const payload = {
+        long_url: url,
+        short_url,
+        created_date,
+      };
 
-    return res.status(200).json({
-      ...payload,
-    });
+      await db.collection(COLLECTION_NAME_URL_SHORTENER).add(payload);
+
+      return res.status(200).json({
+        ...payload,
+      });
+    } else {
+      let final_data = {};
+      snapshot.forEach((doc) => {
+        final_data = { ...doc.data() };
+      });
+
+      return res.status(200).json({
+        ...final_data,
+      });
+    }
   } catch (err) {
     return res.status(500).json({
       message: err.toString(),

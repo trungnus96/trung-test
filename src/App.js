@@ -1,11 +1,11 @@
 import React, { memo, useEffect, useState } from "react";
 import "./App.css";
 
-// utilities
-import { makeARequest } from "./utilities/api";
+// firebase
+import { db } from "./constants/firebase_client";
 
-// api
-import * as BrauzApi from "./api/BrauzApi";
+// constants
+const { COLLECTION_NAME_URL_SHORTENER } = require("./constants");
 
 function App() {
   // hooks
@@ -17,25 +17,40 @@ function App() {
 
   // functions
   const decodeShortenedUrl = async () => {
-    const { href = "" } = window.location;
+    try {
+      let { href = "" } = window.location;
 
-    await makeARequest({
-      name: `Decode Shorted URL`,
-      is_check_success: false,
-      requestFunction: BrauzApi.decodeShortenedUrl,
-      payload: {
-        url: href,
-      },
-      handleError: (error_message) => {
-        setErrorMessage(error_message);
-      },
-      handleSuccess: (response) => {
-        const { data = {} } = response;
+      // remove "/" at the end of href if needed
+      const last_index = href.lastIndexOf("/");
+
+      if (last_index !== -1 && last_index === href.length - 1) {
+        href = href.substring(0, href.length - 1);
+      }
+
+      const snapshot = await db
+        .collection(COLLECTION_NAME_URL_SHORTENER)
+        .where(
+          "short_url",
+          "==",
+          "https://brauz-url-test.netlify.app/vN_p6UicgxIPZiTV1IFpn1603943094055"
+        )
+        .get();
+
+      if (snapshot.empty) {
+        setErrorMessage("Invalid URL");
+      } else {
+        let data = {};
+        snapshot.forEach((doc) => {
+          data = { ...doc.data() };
+        });
+
         const { long_url = "" } = data;
-
-        window.location.replace(long_url);
-      },
-    });
+        console.log(long_url);
+        // window.location.replace(long_url);
+      }
+    } catch (e) {
+      setErrorMessage(e.toString());
+    }
   };
 
   // content render helper
